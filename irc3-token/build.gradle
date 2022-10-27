@@ -22,7 +22,7 @@ dependencies {
 }
 
 optimizedJar {
-    mainClassName = 'com.iconloop.score.example.Example'
+    mainClassName = 'com.iconloop.score.example.IRC3TokenURI'
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

@@ -19,27 +19,57 @@ package com.iconloop.score.example;
 import com.iconloop.score.token.irc3.IRC3Basic;
 import score.Address;
 import score.Context;
+import score.DictDB;
+import score.VarDB;
 import score.annotation.External;
 
 import java.math.BigInteger;
 
-public class Example extends IRC3Basic {
-    public Example(String _name, String _symbol) {
+public class IRC3TokenURI extends IRC3Basic {
+    private final DictDB<BigInteger, String> tokens;
+    private final VarDB<BigInteger> countURI;
+
+    public IRC3TokenURI(String _name, String _symbol) {
         super(_name, _symbol);
+        this.tokens = Context.newDictDB("tokens", String.class);
+        this.countURI = Context.newVarDB("countURI", BigInteger.class);
+        this.countURI.set(BigInteger.ZERO);
     }
 
     @External
     public void mint(BigInteger _tokenId) {
-        // simple access control - only the contract owner can mint new token
         Context.require(Context.getCaller().equals(Context.getOwner()));
         super._mint(Context.getCaller(), _tokenId);
     }
 
     @External
+    public void mintURI(String uri) {
+        Context.require(Context.getCaller().equals(Context.getOwner()));
+        this.countURI.set(this.countURI.get().add(BigInteger.ONE));
+        this.tokens.set(this.countURI.get(), uri);
+        super._mint(Context.getCaller(), this.countURI.get());
+    }
+
+    @External
+    public void increaseCount() {
+        Context.require(Context.getCaller().equals(Context.getOwner()));
+        this.countURI.set(this.countURI.get().add(BigInteger.ONE));
+    }
+
+    @External(readonly = true)
+    public String getURIToken(BigInteger _tokenId) {
+        return this.tokens.get(_tokenId);
+    }
+
+    @External
     public void burn(BigInteger _tokenId) {
-        // simple access control - only the owner of token can burn it
         Address owner = ownerOf(_tokenId);
         Context.require(Context.getCaller().equals(owner));
         super._burn(_tokenId);
+    }
+
+    @External(readonly = true)
+    public BigInteger total() {
+        return this.countURI.get();
     }
 }
