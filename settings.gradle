@@ -1,0 +1,2 @@
+rootProject.name = 'java-score-examples'
+include ('irc3-token')
